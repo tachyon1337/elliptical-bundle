@@ -4362,6 +4362,7 @@
         options.model = options.model || {};
         var context={};
         (options.context) ? context[options.context]=options.model : context=options.model;
+
         return context;
     }
 
@@ -5950,6 +5951,18 @@
             var body = $('body');
             body.append(container);
             var windowSelector=(this.options.$customElements) ? 'ui-window' : '.ui-window';
+            if(opts[opts.context]===undefined){
+                opts[opts.context]={};
+            }
+            if(opts[opts.context].partial===undefined){
+
+                var provider = $.Widget.prototype.options.$providers.template;
+                if(provider.cache['empty-template']===undefined){
+                    var compiled = provider.compile("&nbsp;", "empty-template");
+                    provider.loadSource(compiled);
+                }
+                opts[opts.context].partial='empty-template';
+            }
             this._render(container,opts,function(err,out){
                 var window=container.find(windowSelector);
                 window.window(opts.window);
@@ -7126,32 +7139,15 @@
 
         _appendSearch:function(drawerMenu,drawerHeader){
             /* first check in cloned menu items */
-            var hasSearch = drawerMenu.find(this._data.listItem + '.has-search');
-            if (hasSearch[0]) {
-                /* get search container */
-                var searchClass=this._data.searchClass;
-                var search = $(hasSearch[0]).find(searchClass);
-                var touchInput = search.find(this._data.searchRole);
-                if (touchInput) {
-                    this._data.touchInput = touchInput;
-                    /* append searchbox */
-                    drawerHeader.append(search);
-                    /* touch search handler */
-                    this._onSearch(touchInput,'touch');
+            var self=this;
+            setTimeout(function(){
+                var search=self.element.find('[role=search]');
+                if(search[0]){
+                    var clone=search.clone();
+                    drawerHeader.append(clone);
                 }
+            },1000);
 
-                /* remove from the menu */
-                hasSearch.remove();
-
-                /* setup desktop search handler */
-                this._initSearchHandler(__customElements);
-            }else{
-                /* check in the original element */
-                var search_=this._initSearchHandler(true);
-                if(search_){
-                    this._initTouchSearchHandler(search_,drawerHeader);
-                }
-            }
         },
 
         /**
@@ -9762,7 +9758,7 @@
                 css.left = left + 'px';
             }
             if (!$.isEmptyObject(css)) {
-                css.margin = '0px';
+                //css.margin = '0px';
                 ele.css(css);
             }
         },
@@ -9828,7 +9824,15 @@
             }
             var eventData=this._eventData();
             this._isOpen = true;
+            if(!this._data.element){
+                this._data.element=this.element;
+            }
+            var node=this._data.element[0];
+            if(node.dataset.upgraded==='false'){
+                node.dataset.upgraded='true';
+            }
             var ele = this._data.element;
+
             this._onEventTrigger('showing', eventData);
 
             this._setDrag();
@@ -10137,9 +10141,9 @@
          * @public
          */
         show: function () {
-            if (!this._isOpen) {
+            //if (!this._isOpen) {
                 this._open();
-            }
+            //}
         },
 
         /**
@@ -10147,9 +10151,9 @@
          */
         hide: function () {
 
-            if (this._isOpen) {
+            //if (this._isOpen) {
                 this._close();
-            }
+            //}
         },
 
         /**
