@@ -13072,6 +13072,7 @@
          * @private
          */
         __render: function($scope,callback){
+            var self=this;
             var opts={};
             opts.template=this._data.templateId;
             if(opts.template===null){
@@ -13080,15 +13081,21 @@
             if (opts.template === undefined || opts.template === null) {
                 opts.template = this._data.templateNode.attr('template');
             }
-            if(this.__isModelList()){
-                var prop=Object.keys($scope)[0];
-                opts.model=$scope[prop];
-                opts.context=prop;
-            }else{
-                opts.model=$scope;
+            if (!(opts.template === undefined || !opts.template)) {
+                if (this.__isModelList()) {
+                    var prop = Object.keys($scope)[0];
+                    opts.model = $scope[prop];
+                    opts.context = prop;
+                } else {
+                    opts.model = $scope;
+                }
+                opts.parse = false;
+                this.__renderTemplate(opts, callback);
+            } else {
+                setTimeout(function () {
+                    self.__render($scope, callback);
+                }, 500);
             }
-            opts.parse=false;
-            this.__renderTemplate(opts,callback);
         },
 
         /**
