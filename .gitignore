@@ -35,6 +35,14 @@ nbproject
 #Ruby
 *.gem
 
+#Node
+node_modules/
+
+#Visual Studio
+obj/
+bin/
+*.suo
+
 test/
 
-assets/
+project-assets/
