@@ -5,11 +5,7 @@ if(typeof global==='undefined'){
 global.Platform = global.Platform || {};
 global.logFlags = global.logFlags || {};
 
-window.Elliptical = function (fn) {
-    document.addEventListener('WebComponentsReady', function () {
-        fn.call(this);
-    });
-};
+
 
 Object.defineProperty(window.Elliptical, '$scope', {
   set: function(newValue) {
