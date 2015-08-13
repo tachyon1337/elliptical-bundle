@@ -6,7 +6,6 @@ global.Platform = global.Platform || {};
 global.logFlags = global.logFlags || {};
 
 
-
 Object.defineProperty(window.Elliptical, '$scope', {
   set: function(newValue) {
     window.$$=window.$$ || {};
