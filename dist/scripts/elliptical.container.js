@@ -46,6 +46,9 @@
          * @returns {object}
          */
         getType:function(name){
+            if(!name || name===undefined){
+                return null;
+            }
             var obj_=null;
             var type=null;
             var types=this._registrations;

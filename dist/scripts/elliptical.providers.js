@@ -188,6 +188,12 @@
                 } else {
                     count = result[count_];
                     data = result[data_];
+                    if(count===undefined){
+                        count=result.count;
+                    }
+                    if(data===undefined){
+                        data=result.data;
+                    }
                 }
 
 
@@ -248,7 +254,9 @@
                 //first,last pages
                 pagination.firstPage = assignUrl(baseUrl, 1, querySearch);
                 pagination.lastPage = assignUrl(baseUrl, pageCount, querySearch);
-
+                if(page===pageCount){
+                    pagination.nextPage=pagination.lastPage;
+                }
 
                 //assign record pointers
                 var currentPointer = assignRecordPointers(count, page, pageSize);
@@ -401,6 +409,7 @@
         protocol: null,
         $queryProvider: $OData,
         onSend: null,
+        withCredentials:false,
 
         /**
          * @param {object} opts
@@ -416,6 +425,7 @@
             this.path = this.path || '/api';
             this.protocol = opts.protocol || this.constructor.protocol;
             this.protocol = this.protocol || 'http';
+            this.withCredentials=opts.withCredentials || this.constructor.withCredentials;
 
             if ($queryProvider !== undefined) {
                 this.$queryProvider = $queryProvider;
@@ -454,19 +464,19 @@
                 }
             }
             if (q !== '') {
-                options.path += '/' + q;
+                options.path +=(resource.indexOf('/')===-1) ? '/' + q : q;
             }
 
             //test query options
-            if (query && typeof query.filter !== 'undefined') {
+            if (query && typeof query.filter !== 'undefined' && !utils.emptyObject(query.filter)) {
                 options.path += this.$queryProvider.filter(options.path, query.filter);
             }
 
-            if (query && typeof query.orderBy !== 'undefined') {
+            if (query && typeof query.orderBy !== 'undefined' && !utils.emptyObject(query.orderBy)) {
                 options.path += this.$queryProvider.orderBy(options.path, query.orderBy);
             }
 
-            if (query && typeof query.orderByDesc !== 'undefined') {
+            if (query && typeof query.orderByDesc !== 'undefined' && !utils.emptyObject(query.orderByDesc)) {
                 options.path += this.$queryProvider.orderByDesc(options.path,query.orderBy, query.orderByDesc);
             }
 
@@ -502,17 +512,6 @@
 
         },
 
-        /**
-         * non-standard http implementation of a "merge"
-         * @param params {Object}
-         * @param resource {String}
-         * @param callback {Function}
-         * @returns callback
-         * @public
-         */
-        patch: function (params, resource, callback) {
-            throw new Error('patch not implemented');
-        },
 
 
         /**
@@ -566,34 +565,6 @@
             }
             //send
             this._send(options, resource, callback);
-        },
-
-
-        /**
-         * non-standard http implementation of a sql query
-         * @param params {Object}
-         * @param resource {String}
-         * @param opts {Object}
-         * @param callback {Function}
-         * @returns callback
-         * @public
-         */
-        query: function (params, resource, opts, callback) {
-            throw new Error('query not implemented');
-        },
-
-
-        /**
-         * non-standard http implementation of a sql command
-         * @param params {Object}
-         * @param resource {String}
-         * @param opts {Object}
-         * @param callback {Function}
-         * @returns callback
-         * @public
-         */
-        command: function (params, resource, opts, callback) {
-            throw new Error('command not implemented');
         },
 
 
@@ -680,6 +651,8 @@
             resource = (utils.strFirstChar(resource) === '/') ? resource : '/' + resource;
             options.path = options.path + resource;
             options.protocol = this.protocol || this.constructor.protocol;
+            options.withCredentials=this.withCredentials || this.constructor.withCredentials;
+
             if (data && data !== undefined) {
                 options.data = data;
             }
@@ -996,7 +969,14 @@
                     _loadTemplateFromControllerView(this, ctrlName, ctrlView, context, callback);
                 }
             } else {
-                _loadTemplateByStringValue(this, template, context, callback);
+                if(template.indexOf('shared.') > -1){
+                    _loadTemplateFromSharedViews($provider,template,function(err,out){
+                        $provider.render(template, context, callback);
+                    });
+                }else{
+                    _loadTemplateByStringValue(this, template, context, callback);
+                }
+
             }
 
         },
@@ -1052,7 +1032,7 @@
         }
     });
 
-    function _loadTemplateFromSharedViews($provider, template, callback) {
+    function _sharedUrlPath($provider,template){
         var root = $provider._root;
         var url=root + '/views';
         var arr=template.split('.');
@@ -1060,6 +1040,11 @@
             url+='/' + arr[i];
         }
         url+='.html';
+        return url;
+    }
+
+    function _loadTemplateFromSharedViews($provider, template, callback) {
+        var url=_sharedUrlPath($provider,template);
         $.get(url,function(data){
             if(data){
                 var compiled = $provider.compile(data, template);

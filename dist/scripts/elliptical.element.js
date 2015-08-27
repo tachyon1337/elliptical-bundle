@@ -1511,8 +1511,12 @@
         var context=parseTemplateContext(options,provider);
         var template=templateReference(options,provider);
         provider.render(template, context, function (err, out) {
-            var html = out.replace(/<ui-template(.*?)>/g, '').replace(/<\/ui-template>/g, '');
-            var parsedHtml= (options.parse) ? $.parseHTML(html) : html;
+            //var html = out.replace(/<ui-template(.*?)>/g, '').replace(/<\/ui-template>/g, '');
+            var html=out;
+            var parsedHtml
+            if(html!==undefined){
+                parsedHtml= (options.parse) ? $.parseHTML(html) : html;
+            }
             if (callback) {
                 callback(err, parsedHtml);
             }
@@ -1550,8 +1554,11 @@
         var context=parseTemplateContext(options,provider);
         var template=templateReference(options,provider);
         provider.render(template, context, function (err, out) {
-            var html=out.replace(/<ui-template(.*?)>/g,'').replace(/<\/ui-template>/g,'');
-            element.html(html);
+            //var html=out.replace(/<ui-template(.*?)>/g,'').replace(/<\/ui-template>/g,'');
+            var html=out;
+            if(html!==undefined){
+                element.html(html);
+            }
             if (callback) {
                 callback(err, html);
             }
@@ -1559,7 +1566,7 @@
     };
 
     $.Widget.prototype._precompileTemplate = function (id,node,prop) {
-        var str=getTemplateFragementById(id);
+        var str=getTemplateFragmentById(id);
         if(!str){
             var $provider = $.Widget.prototype.options.$providers.template;
             precompileTemplateFragment($provider,node,id,prop);
@@ -1572,7 +1579,7 @@
         * @returns {String}
         */
     $.Widget.prototype._getFragmentById = function (id) {
-        return getTemplateFragementById(id);
+        return getTemplateFragmentById(id);
     };
 
     function parseTemplateContext(options,provider){
@@ -1614,12 +1621,15 @@
             id:id,
             fragment:html
         };
+        if($$.fragments===undefined){
+            $$.fragments=[];
+        }
         $$.fragments.push(obj);
         var compiled=$provider.compile(html,id);
         $provider.loadSource(compiled);
     }
 
-    function getTemplateFragementById(id){
+    function getTemplateFragmentById(id){
         var fragment;
         if(!$$ || !$$.fragments){
             return null;
@@ -1634,6 +1644,7 @@
         });
 
         return fragment;
+
     }
 
     function upgradeTemplateCustomElements(node){
@@ -2468,7 +2479,7 @@
                     opt=opt.replace('data-','');
                 }
                 if(camelCase && camelCase !=='false'){
-                    (opt !== 'template') ? opts[opt.toCamelCase()] = booleanCheck(val.toCamelCase()) : (opts[opt] = booleanCheck(val));
+                    (opt !== 'template') ? opts[opt.toCamelCase()] = booleanCheck(val) : (opts[opt] = booleanCheck(val));
 
                 }else{
                     opts[opt.toCamelCase()]= booleanCheck(val);
@@ -2653,6 +2664,11 @@
         },
 
         _onCreate: function(){
+            if(this._created){
+                return;
+            }else{
+                this._created=true;
+            }
             this._publishReady();
             if(!this.options.skipInit){
                 this._initElement();

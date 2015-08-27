@@ -1,5 +1,7 @@
 
 
+
+
 /*
  * =============================================================
  * elliptical.Class
@@ -595,10 +597,10 @@
         define(['../class/class'], factory);
     } else {
         // Browser globals (root is window)
-        root.elliptical.Model=factory(root.elliptical.Class);
+        root.elliptical.Model=factory(root.elliptical.Class,root.elliptical.utils);
         root.returnExports = root.elliptical.Model;
     }
-}(this, function (Class) {
+}(this, function (Class,utils) {
 
     var Model;
     Model = Class.extend({
@@ -652,36 +654,6 @@
             onGet:function(data){return data},
 
 
-            /**
-             * query model
-             * @param params {Object}
-             * @param query {Object}
-             * @param callback {Function}
-             * @public
-             */
-            query: function (params, query, callback) {
-                this.__isImplemented('query');
-                var self = this,
-                    $provider = this.$provider,
-                    $paginationProvider = this.$paginationProvider,
-                    result;
-
-                $provider.query(params, query, function (err, data) {
-                    if (!err) {
-                        if (query.paginate && $paginationProvider) {
-                            result = $paginationProvider.get(query, data);
-                            self._data = result.data;
-                        } else {
-                            result = data;
-                            self._data = data;
-                        }
-                    }
-                    if (callback) {
-                        callback(err, result);
-                    }
-                });
-            },
-
 
             /**
              * post model
@@ -710,18 +682,6 @@
 
             },
 
-            /**
-             * patch model (~merge)
-             * @param params {Object}
-             * @param callback
-             */
-            patch: function (params, callback) {
-                this.__isImplemented('patch');
-                var $provider = this.$provider,
-                    resource = this['@resource'];
-                $provider.patch(params, resource, callback);
-
-            },
 
             /**
              * delete model
@@ -737,30 +697,6 @@
 
             },
 
-            /**
-             * command
-             * @param params {Object}
-             * @param callback {Function}
-             * @public
-             */
-            command: function (params, callback) {
-                this.__isImplemented('command');
-                var $provider = this.$provider;
-                $provider.command(params, callback);
-            },
-
-            
-
-            /**
-             * sets the model providers for implementation
-             * @param $provider {Object}
-             * @param $pagination {Object}
-             * @public
-             */
-            $setProviders: function ($provider, $pagination) {
-                this.$provider = $provider;
-                this.$paginationProvider = $pagination;
-            },
 
             __isImplemented: function (method) {
                 try {
@@ -770,7 +706,6 @@
                 } catch (ex) {
 
                 }
-
             }
 
         },
@@ -840,28 +775,6 @@
                 this.constructor.put(data, callback);
             },
 
-            /**
-             * @param params {Object}
-             * @param callback {Function}
-             */
-            patch: function (params, callback) {
-                var data = this._data;
-                (typeof params === 'function') ? callback = params : data = params;
-                this.constructor.query(data, callback);
-            },
-
-            /**
-             * @param params {Object}
-             * @param callback {Function}
-             * @public
-             */
-            query: function (params, callback) {
-                var data = this._data,
-                    query = this.$query;
-
-                (typeof params === 'function') ? callback = params : data = params;
-                this.constructor.query(data, query, callback);
-            },
 
             /**
              *
@@ -869,7 +782,14 @@
              */
             filter: function (val) {
                 if(val && val !==undefined){
-                    this.$query.filter = val;
+                    if(typeof val==='object'){
+                        var newVal=utils.toQueryable(val);
+                        if(!utils.emptyObject(newVal)){
+                            this.$query.filter = newVal;
+                        }
+                    }else{
+                        this.$query.filter = val;
+                    }
                 }
                 return this;
             },
@@ -879,15 +799,14 @@
              * @param {object} val
              */
             orderBy: function (val) {
-                if(val && val !==undefined){
+                if(val && val !==undefined && !utils.emptyObject(val)){
                     this.$query.orderBy = val;
                 }
-                this.$query.orderBy = val;
                 return this;
             },
 
             orderByDesc: function (val) {
-                if(val && val !==undefined){
+                if(val && val !==undefined && !utils.emptyObject(val)){
                     this.$query.orderByDesc = val;
                 }
                 return this;
@@ -898,7 +817,7 @@
              * @param {object} val
              */
             top: function (val) {
-                if(val && val !==undefined){
+                if(val && val !==undefined && !utils.emptyObject(val)){
                     this.$query.top = val;
                 }
                 return this;
@@ -909,7 +828,7 @@
              * @param {object} val
              */
             skip: function (val) {
-                if(val && val !==undefined){
+                if(val && val !==undefined && !utils.emptyObject(val)){
                     this.$query.skip = val;
                 }
                 return this;
@@ -938,17 +857,6 @@
                 var data = this._data;
                 (typeof params === 'function') ? callback = params : data = params;
                 this.constructor.delete(data, callback);
-            },
-
-            /**
-             * @param params {Object}
-             * @param callback {Function}
-             * @public
-             */
-            command: function (params, callback) {
-                var data = this._data;
-                (typeof params === 'function') ? callback = params : data = params;
-                this.constructor.command(data, callback);
             }
 
         });
@@ -2113,6 +2021,12 @@
                 }
             }
 
+            if(params.withCredentials){
+                settings.xhrFields={
+                    withCredentials: true
+                };
+            }
+
             var ajax = $.ajax(settings).done(function (data, status) {
                 try {
                     if (typeof data === 'string') {
@@ -2563,6 +2477,9 @@
                 var title = '';
                 stateObject.url = Location.href;
                 stateObject.route = Location.hashify(stateObject.route);
+                if(utils.strLastChar(stateObject.route) === '#'){
+                    stateObject.route+='/';
+                }
                 window.history.pushState(stateObject, title, stateObject.route);
             }
         },
@@ -2702,6 +2619,9 @@
         location:function(route, method,params){
 
             route=Location.deHashify(route);
+            if(route===''){
+                route='/';
+            }
             History.push();
 
             if (!this.dispatch(route,method,params)) {
@@ -2836,6 +2756,7 @@
                 if((route).charAt(index + 1) !== '#'){
                     route=utils.stringInsertAt(route,index,'/#');
                 }
+
             }else if(Router.hashTag){
                 if((route).charAt(1) !== '#'){
                     route='/#' + route;
@@ -3377,10 +3298,14 @@
         /**
          *
          * @param {string} key
+         * @param {object} params
          * @public
          */
-        delete: function (key) {
-            $.removeCookie(key);
+        delete: function (key,params) {
+            if(params===undefined){
+                params={path:'/'};
+            }
+            $.removeCookie(key,params);
         },
 
         /**
@@ -4111,6 +4036,13 @@
             ///if template has been set to null, reset it to the default controller name/action
             if (!template_) {
                 template_ = { name: req.__name, view: req.__action };
+            }else if(typeof template_==='string'){
+                var namespaceView=template_.split('.');
+                if(namespaceView.length ===2){
+                    template_ = { name: template_[0], view: template_[1] };
+                }else if(namespaceView.length===1){
+                    template_ = { name: req.__name, view: template_ };
+                }
             }
             if (!callback_ instanceof Function) {
                 callback_ = null;

@@ -181,11 +181,44 @@
             arr.splice(0,arr.length);
         },
 
+        /**
+         * is empty object or string
+         * @param {*} obj
+         * @returns {boolean}
+         */
+        emptyObject:function(obj){
+            if(typeof obj==='object'){
+                return (Object.keys(obj).length === 0);
+            }else if(typeof obj==='string'){
+                return (obj.length===0);
+            }else{
+                return false;
+            }
+        },
+
+        /**
+         *
+         * @returns {*}
+         */
+        toQueryable:function(obj){
+            if(typeof obj!=='object'){
+                return obj;
+            }
+            var qry={};
+            for(var key in obj){
+                if(obj.hasOwnProperty(key)){
+                    if(key.indexOf('$')!==0){
+                        qry[key]=obj[key];
+                    }
+                }
+            }
+            return qry;
+        },
+
 
         isValidArrayIndex: function(val){
             return /^[0-9]+$/.test(String(val));
         },
-
 
 
         /**
@@ -380,7 +413,7 @@
         /**
          * returns last n chars of string
          * @param s {String}
-         * @param nv{Number}
+         * @param n{Number}
          * @returns {string}
          */
         strLastNChars:function(s,n){

@@ -1390,7 +1390,9 @@ Sizzle.attr = function( elem, name ) {
 	if ( ( elem.ownerDocument || elem ) !== document ) {
 		setDocument( elem );
 	}
-
+    if(!elem.getAttribute){
+		return null;
+	}
 	var fn = Expr.attrHandle[ name.toLowerCase() ],
 		// Don't get fooled by Object.prototype properties (jQuery #13807)
 		val = fn && hasOwn.call( Expr.attrHandle, name.toLowerCase() ) ?
@@ -5523,7 +5525,7 @@ var getStyles = function( elem ) {
 		// Support: IE<=11+, Firefox<=30+ (#15098, #14150)
 		// IE throws on elements created in popups
 		// FF meanwhile throws on frame elements through "defaultView.getComputedStyle"
-		if ( elem.ownerDocument.defaultView.opener ) {
+		if ( elem.ownerDocument.defaultView && elem.ownerDocument.defaultView.opener ) {
 			return elem.ownerDocument.defaultView.getComputedStyle( elem, null );
 		}
 
