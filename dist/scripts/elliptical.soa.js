@@ -4039,7 +4039,7 @@
             }else if(typeof template_==='string'){
                 var namespaceView=template_.split('.');
                 if(namespaceView.length ===2){
-                    template_ = { name: template_[0], view: template_[1] };
+                    template_ = { name: namespaceView[0], view: namespaceView[1] };
                 }else if(namespaceView.length===1){
                     template_ = { name: req.__name, view: template_ };
                 }
