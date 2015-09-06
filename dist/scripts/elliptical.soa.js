@@ -3289,6 +3289,9 @@
             if(params.path===undefined){
                 params.path='/';
             }
+            if (params.expires === undefined) {
+                params.expires = 365;
+            }
             if(typeof value==='object'){
                 value=JSON.stringify(value);
             }
@@ -3324,6 +3327,86 @@
 
 }));
 
+/*
+ * =============================================================
+ * elliptical.providers.$Session
+ * =============================================================
+ *
+ */
+
+//umd pattern
+
+(function (root, factory) {
+    if (typeof module !== 'undefined' && module.exports) {
+        //commonjs
+        module.exports = factory(require('elliptical-mvc'));
+    } else if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['elliptical-mvc'], factory);
+    } else {
+        // Browser globals (root is window)
+        root.elliptical.providers = root.elliptical.providers || {};
+        root.elliptical.providers.$Session = factory(root.elliptical);
+        root.returnExports = root.elliptical.providers.$Session;
+    }
+}(this, function (elliptical) {
+
+    var $Session;
+    $Session = elliptical.Class.extend({
+
+
+        /**
+         * @param {string} key
+         * @returns {object}
+         * @public
+         */
+        get: function (key) {
+            var value = sessionStorage.getItem(key);
+            try {
+                value = JSON.parse(value);
+            } catch (ex) {
+
+            }
+
+            return value;
+        },
+
+        /**
+         * @param {string} key
+         * @param {object} value
+         * @param {object} params - not used by this provider
+         * @public
+         */
+        set: function (key, value, params) {
+            if (typeof value === 'object') {
+                value = JSON.stringify(value);
+            }
+
+            sessionStorage.setItem(key, value);
+        },
+
+        /**
+         *
+         * @param {string} key
+         */
+        delete: function (key) {
+            sessionStorage.removeItem(key);
+        },
+
+        /**
+         * @public
+         */
+        clear: function () {
+            sessionStorage.clear();
+        }
+
+
+    }, {});
+
+
+    return $Session;
+
+}));
 
 
 
@@ -3792,27 +3875,26 @@
                     configurable: false
                 },
 
-                'cookies': {
-                    get: function (name) {
-                       return $Cookie.get(name);
-                    },
-                    configurable: false
-                },
-
                 'signedCookies': {
                     get: function () {
 
                         return {};
                     },
                     configurable: false
-                },
-
-                'session': {
-                    get: function (name) {
-                        return $Session.get(name);
-                    }
                 }
             });
+            this.session = {};
+            for (var i = 0; i < sessionStorage.length; i++) {
+                var k = sessionStorage.key(i);
+                this.session[k] = $Session.get(k);
+            }
+            this.cookies = {};
+            var cookies = document.cookie.split(';');
+            for (var i = 0 ; i < cookies.length; i++) {
+                var k = cookies[i].split("=");
+                var key = k[0].replace(/^ /, '');
+                this.cookies[key] = $Cookie.get(key);
+            }
             this._parsedUrl = {};
             this._parsedUrl.pathname = Location.path;
             this._parsedUrl.virtualize = function (url) {

@@ -62,10 +62,27 @@
             }
         };
 
-        this.render = function (element,template, context, callback) {
+        this.render = function (element, template, context, callback) {
+            if (typeof element === 'string') {
+                template = element;
+                context = template;
+                element = null;
+            }
+            window.dust.render(template, context, function (err, out) {
+                if (!err && element) {
+                    element.html(out);
+                }
+
+                if (callback) {
+                    callback(err, out);
+                }
+            });
+        };
+
+        this.renderTemplate = function (template, context, callback) {
             window.dust.render(template, context, function (err, out) {
                 if (!err) {
-                    element.html(out);
+                    out=$.parseHTML(out, document, true);
                 }
 
                 if (callback) {
@@ -76,7 +93,49 @@
 
         this.click='touchclick';
 
-        this._events=[];
+        this._events = [];
+
+        this.preload = function (node, callback) {
+            var imgArray = [];
+            var err = {};
+            var data = {};
+            var element = $(node);
+            var images = element.find('img');
+            var length = images.length;
+            var counter = 0;
+            if (length === 0) {
+                if (callback) {
+                    callback(null);
+                }
+                return false;
+            }
+            $.each(images, function (i, img) {
+                var image = new Image();
+                $(image).bind('load', function (event) {
+                    counter++;
+                    imgArray.push(image);
+                    if (counter === length) {
+                        if (callback) {
+                            data.images = imgArray;
+                            data.length = counter;
+                            callback(data);
+                        }
+                    }
+                });
+                image.src = img.src;
+            });
+            return true;
+        };
+
+        this.load = function (src,callback) {
+            var self = this;
+            var newImg = new Image();
+            newImg.onload = function () {
+                callback(this);
+            };
+            newImg.src =src; 
+            return;
+        };
 
         this.onDestroy=function(){};
 

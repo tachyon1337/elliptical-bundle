@@ -718,8 +718,8 @@
             };
 
             Router.Location.reload=function(){
-                var route=Location.path;
-                Router.location(route,'get');
+                var url=location.href;
+                Router.location(url,'get');
             };
         },
 

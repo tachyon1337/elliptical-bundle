@@ -28,8 +28,8 @@
 
         /**
          * registers a type
-         * @param {string} [name] - if type has a @resource property set as the name and provider is passed
-         * @param {object} type - required
+         * @param {string} name 
+         * @param {object} type 
 
          */
         registerType:function(name,type){

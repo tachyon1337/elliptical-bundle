@@ -323,7 +323,7 @@
     return function serviceLocator() {
 
         return function serviceLocator(req, res, next) {
-            req.service=function(name){
+            req.getType=function(name){
                 var app=req.app;
                 var container=app.container;
 

@@ -278,6 +278,12 @@
         return chunk.write(url);
     };
 
+    dust.helpers.formatSku = function (chunk, context, bodies, params) {
+        var value = dust.helpers.tap(params.value, chunk, context);
+        var sku = value.substring(5);
+        return chunk.write(sku);
+    };
+
     dust.helpers.inline={};
 
     dust.helpers.inline.formatDate=function(val,format){
