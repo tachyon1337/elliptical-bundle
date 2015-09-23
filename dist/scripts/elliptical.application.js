@@ -57,6 +57,7 @@
             this.Router=Router;
             this.utils=utils;
             this._defineProps();
+            this.isHistory = false;
 
             /* define a 'click' delegate */
             var delegate_=new Delegate([{event:'touchclick',delegate:'click'}]);
@@ -686,6 +687,7 @@
                     delegates.submit(formHistory);
                 }
 
+                app_.isHistory = true;
                 //http get requests
                 delegates.request();
 
@@ -700,7 +702,8 @@
                 Router.start();
 
                 //setup convenient callback for history that allows for DI
-                app_.history=function(fn){
+                app_.history = function (fn) {
+                    var xx = document;
                     document.addEventListener('OnDocumentHistory', function (event) {
                         var data=event.detail;
                         fn.call(app_,data,app_.container);
@@ -718,8 +721,8 @@
             };
 
             Router.Location.reload=function(){
-                var url=location.href;
-                Router.location(url,'get');
+                var route=Location.path;
+                Router.location(route,'get');
             };
         },
 

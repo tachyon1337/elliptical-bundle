@@ -34,7 +34,7 @@
     }
     //handle initial onload
     $(function(){
-        var added=document.querySelectorAll('[ea]');
+        var added=document.querySelectorAll('[ea-bind]');
         if(added.length){
             testForBindings(added);
         }
@@ -137,6 +137,28 @@
             return;
         };
 
+        this.component = function (element, component, fn) {
+            if (element[component]) {
+                return fn(element[component].bind(element));
+            } else {
+                var count = 0;
+                var MAX_COUNT = 10;
+                var intervalId = setInterval(function () {
+                    if (element[component]) {
+                        clearInterval(intervalId);
+                        fn(element[component].bind(element));
+                    } else {
+                        if (count < MAX_COUNT) {
+                            count++;
+                        } else {
+                            clearInterval(intervalId);
+                            fn(element[component].bind(element));
+                        }
+                    }
+                }, 300);
+            }
+        };
+
         this.onDestroy=function(){};
 
         this.event=function(element, event, selector,callback) {
@@ -189,7 +211,7 @@
     function testForBindings(added){
         var contexts=BINDING_CONTEXTS;
         contexts.forEach(function(obj){
-            var results=$(added).selfFind('[ea="' + obj.val + '"]');
+            var results=$(added).selfFind('[ea-bind="' + obj.val + '"]');
             if(results[0]){
                 $.each(results,function(index,result){
                     BINDINGS.push({node:result,context:obj.context,val:obj.val,fn:obj.fn});
@@ -208,7 +230,7 @@
 
 
     function destroyBindings(removed){
-        var result=$(removed).selfFind('[ea]');
+        var result=$(removed).selfFind('[ea-bind]');
         if(result.length && result.length > 0){
             $.each(result,function(index,obj){
                 destroyBinding(obj);

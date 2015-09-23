@@ -458,7 +458,7 @@
                 if (prop === 'Index' && !testIndexProp(clonedArgs_[0])) { //e.g.,: "/Home/Index" =>"/Home", "/Product/Index/1" => "/Product/Index/1"
                     clonedArgs_[0] = clonedArgs_[0].replace(/@action/g, '');
                 }else{
-                    var prop_=prop.replace(/_/,'-'); //ex: '/Sign-In' ---> Sign_In:fn()
+                    var prop_=prop.replace(/_/g,'-'); //ex: '/Sign-In' ---> Sign_In:fn()
                     clonedArgs_[0]=clonedArgs_[0].replace(/@action/g,prop_);
                 }
                 length=clonedArgs_[0].length;
@@ -3578,12 +3578,18 @@
 
     return function request(){
         //data-route attr excluded from delegated capture
-        $(document).on('touchclick', 'a:not([data-route])', onRequest);
-
+        //on touch devices, listen for both touchstart and click events for reliable capture
+        var deviceClick = ('ontouchend' in document) ? 'touchstart tap click' : 'click';
+        $(document).on(deviceClick, 'a:not([data-route])', onRequest);
+      
         function onRequest(event) {
-            var href = $(event.currentTarget).attr('href');
-            if (href !==undefined && href !== '#') {
-                event.stopPropagation();
+            var target = $(event.currentTarget);
+            var href = target.attr('href');
+            if (href !== undefined && href !== '#') {
+                var propagation = target.attr('data-propagation');
+                if (propagation) {
+                    event.stopPropagation();
+                }
                 event.preventDefault();
 
                 //create data object
