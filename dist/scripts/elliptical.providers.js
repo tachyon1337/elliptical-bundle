@@ -1319,7 +1319,7 @@
 
 /*
  * =============================================================
- * elliptical.providers.$ODataSort
+ * elliptical.providers.$Sort
  * =============================================================
  *
  */
@@ -1336,13 +1336,13 @@
     } else {
         // Browser globals (root is window)
         root.elliptical.providers = root.elliptical.providers || {};
-        root.elliptical.providers.$ODataSort = factory(root.elliptical);
-        root.returnExports = root.elliptical.providers.$ODataSort;
+        root.elliptical.providers.$Sort = factory(root.elliptical);
+        root.returnExports = root.elliptical.providers.$Sort;
     }
 }(this, function (elliptical) {
     var Location = elliptical.Router.Location;
-    var $ODataSort;
-    $ODataSort = elliptical.Class.extend({
+    var $Sort;
+    $Sort = elliptical.Class.extend({
 
 
         /**
@@ -1404,7 +1404,7 @@
     }, {});
 
 
-    return $ODataSort;
+    return $Sort;
 
 }));
 
