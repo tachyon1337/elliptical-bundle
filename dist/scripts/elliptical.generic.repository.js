@@ -131,16 +131,16 @@
             }
 
             if(query.orderBy && query.orderBy !==undefined){
-                result=this.orderBy(query.orderBy);
+                result=this.orderBy(result,query.orderBy);
             }
 
             if(query.orderByDesc && query.orderByDesc !==undefined){
-                result=this.orderByDesc(query.orderByDesc);
+                result=this.orderByDesc(result,query.orderByDesc);
             }
 
 
             if(query.paginate){
-               result=this.paginate(query.paginate,result);
+               result=this.paginate(result,query.paginate);
             }
 
             if(this.callback){
@@ -206,19 +206,19 @@
             return this.model;
         };
 
-        this.orderBy=function(prop){
+        this.orderBy=function(result,prop){
             var orderByIterator=[];
             orderByIterator.push(prop);
             return _sortAsc(result,orderByIterator);
         };
 
-        this.orderByDesc=function(prop){
+        this.orderByDesc=function(result,prop){
             var orderByDescIterator=[];
             orderByDescIterator.push(prop);
             return _sortDesc(result,orderByDescIterator);
         };
 
-        this.paginate=function(paginate,result){
+        this.paginate=function(result,paginate){
             var count=result.length;
             var pageSize=paginate.pageSize;
             var page=paginate.page;
