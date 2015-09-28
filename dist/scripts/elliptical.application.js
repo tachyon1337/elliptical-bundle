@@ -910,7 +910,7 @@
     elliptical.providers=providers;
     elliptical.services=services;
     elliptical.crypto = crypto;
-
+    elliptical.Location=elliptical.Router.Location;
 
     /* expose a try...catch  facade */
     elliptical.Try=function(next,fn){
