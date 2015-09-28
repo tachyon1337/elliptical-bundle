@@ -2839,6 +2839,11 @@
             this.redirect(val);
         },
 
+        get query(){
+            var u=this.href;
+            return url.query(u);
+        },
+
         get search(){
             if(this.hashTag){
                 var url=location.hash;
@@ -2867,6 +2872,10 @@
             }else{
                 location.search=val;
             }
+        },
+
+        getQuery:function(u){
+            return url.query(u);
         },
 
         setQuery:function(key,val){
